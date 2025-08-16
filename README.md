@@ -1,6 +1,6 @@
 # 📖 RagSystem
 
-RagSystem is a **Retrieval-Augmented Generation (RAG)** application that lets you upload documents, process them into embeddings, and interact with them through **Gemini AI** for context-aware Q\&A.
+RagSystem is a **Retrieval-Augmented Generation (RAG)** application that lets you upload documents, process them into embeddings and store them in pineocne vector database, and interact with them through **Gemini AI** for context-aware Q\&A.
 
 ---
 
@@ -8,16 +8,16 @@ RagSystem is a **Retrieval-Augmented Generation (RAG)** application that lets yo
 
 ```
 RagSystem/
-├── main.py                # Main entry point
-├── utils/                 # Utility modules
-│   ├── __init__.py        # Package initialization
-│   ├── pinecone_manager.py# Pinecone vector DB operations
-│   ├── gemini_chat.py     # Gemini AI integration
-│   └── file_processor.py  # File handling (TXT, PDF, DOCX, MD)
-├── data/                  # Documents folder
-├── .env                   # Environment variables (API keys)
-├── .env.example           # Template for environment setup
-└── requirements.txt       # Project dependencies
+├── main.py                    # Main entry point
+├── utils/                     # Utility modules
+│   ├── __init__.py            # Package initialization
+│   ├── pinecone_manager.py    # Pinecone vector DB operations
+│   ├── gemini_chat.py         # Gemini AI integration
+│   └── file_processor.py      # File handling (TXT, PDF, DOCX, MD)
+├── data/                      # Documents folder
+├── .env                       # Environment variables (API keys)
+├── .env.example               # Template for environment setup
+└── requirements.txt           # Project dependencies
 ```
 
 ---
