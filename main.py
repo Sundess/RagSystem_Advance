@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from utils.pinecone_manager import PineconeManager
 from utils.gemini_chat import GeminiChat
 from utils.file_processor import FileProcessor
+from utils.conversation_forms import ConversationalForm
+from utils.tool_agents import ToolAgent, BookingAgent
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +22,8 @@ if 'vectorstore' not in st.session_state:
     st.session_state.vectorstore = None
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
+if 'booking_agent' not in st.session_state:
+    st.session_state.booking_agent = None
 
 
 @st.cache_resource
@@ -28,7 +32,13 @@ def initialize_components():
     pinecone_manager = PineconeManager()
     gemini_chat = GeminiChat()
     file_processor = FileProcessor()
-    return pinecone_manager, gemini_chat, file_processor
+
+    # Initialize booking system
+    conversation_form = ConversationalForm(gemini_chat)
+    tool_agent = ToolAgent()
+    booking_agent = BookingAgent(conversation_form, tool_agent)
+
+    return pinecone_manager, gemini_chat, file_processor, booking_agent
 
 
 def main():
@@ -39,7 +49,11 @@ def main():
     st.markdown("Upload documents and ask questions using AI-powered retrieval!")
 
     # Initialize components
-    pinecone_manager, gemini_chat, file_processor = initialize_components()
+    pinecone_manager, gemini_chat, file_processor, booking_agent = initialize_components()
+
+    # Store booking agent in session state
+    if st.session_state.booking_agent is None:
+        st.session_state.booking_agent = booking_agent
 
     # Sidebar for file upload and processing
     with st.sidebar:
@@ -126,6 +140,15 @@ def main():
         except:
             pass
 
+        # Show booking status
+        if st.session_state.booking_agent and st.session_state.booking_agent.is_booking_active():
+            st.warning("📋 Booking form active")
+            if st.button("❌ Cancel Booking"):
+                cancel_msg = st.session_state.booking_agent.cancel_current_booking()
+                st.session_state.chat_history.append(
+                    {"role": "assistant", "content": cancel_msg})
+                st.rerun()
+
     # Process document when button is clicked
     if process_button and uploaded_file:
         with status_container:
@@ -162,11 +185,57 @@ def main():
                     st.error(f"❌ Error processing document: {str(e)}")
 
     # Handle questions
-    if (ask_button or query) and query and st.session_state.vectorstore:
-        with chat_container:
-            # Add user question to chat history
+    if (ask_button or query) and query:
+        # Add user question to chat history
+        st.session_state.chat_history.append(
+            {"role": "user", "content": query})
+
+        # Check for booking intent first
+        booking_response, booking_complete = st.session_state.booking_agent.process_message(
+            query)
+
+        if booking_response:
+            # Handle booking flow
             st.session_state.chat_history.append(
-                {"role": "user", "content": query})
+                {"role": "assistant", "content": booking_response})
+
+            if booking_complete:
+                # Booking was completed with tool execution
+                st.balloons()
+
+        elif st.session_state.vectorstore:
+            # Handle regular RAG queries
+            with st.spinner("Searching and generating answer..."):
+                try:
+                    # Search for relevant documents
+                    relevant_docs = pinecone_manager.query_vectorstore(
+                        st.session_state.vectorstore, query, k=3
+                    )
+
+                    if relevant_docs:
+                        # Generate answer using Gemini with context
+                        context = "\n\n".join(
+                            [doc.page_content for doc in relevant_docs])
+                        answer = gemini_chat.generate_answer_with_context(
+                            query, context)
+
+                        # Add AI response to chat history
+                        st.session_state.chat_history.append(
+                            {"role": "assistant", "content": answer})
+                    else:
+                        answer = "❌ No relevant documents found. Try rephrasing your question."
+                        st.session_state.chat_history.append(
+                            {"role": "assistant", "content": answer})
+
+                except Exception as e:
+                    st.error(f"❌ Error generating answer: {str(e)}")
+        else:
+            # No vectorstore available
+            no_docs_msg = "📄 No documents have been processed yet. Please upload and process a document first, or ask me to book an appointment/callback!"
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": f"{no_docs_msg}\n\nQuery was: {query}"
+            })
 
             with st.spinner("Searching and generating answer..."):
                 try:

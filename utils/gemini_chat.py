@@ -16,7 +16,7 @@ class GeminiChat:
         Generate an answer using Gemini with provided context
         """
         prompt = f"""
-        You are a helpful AI assistant. Answer the user's question based on the provided context.
+        You are a helpful expert RAG AI assistant. Make you answer sound confident and to the point . Answer the user's question based on the provided context only insted of generating your own.
         
         Context Information:
         {context}
