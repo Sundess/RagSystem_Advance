@@ -45,7 +45,8 @@ RagSystem/
 ### 1. Clone the repository
 
 ```bash
-git clone [Repo_link]
+git clone https://github.com/Sundess/RagSystem_Advance.git
+
 cd RagSystem_Advance
 ```
 
@@ -61,10 +62,8 @@ PINECONE_API_KEY=your_pinecone_api_key_here
 
 ### 3. Install dependencies
 
-Make sure you have Python 3.10+ installed. Then run:
-
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 ### 4. Run the application
@@ -72,7 +71,6 @@ pip install -r requirements.txt
 Use `uv` to run the Streamlit app:
 
 ```bash
-uv sync
 uv run streamlit run main.py
 ```
 
