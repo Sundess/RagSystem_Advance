@@ -2,15 +2,25 @@
 
 **RagSystem** is a powerful **Retrieval-Augmented Generation (RAG)** application that combines document processing with AI-powered chat capabilities. Upload documents, get intelligent answers, and book appointments or callbacks—all in one seamless interface.
 
-## ✨ Key Features
+## Key Features
 
-- 📄 **Multi-Format Document Processing** - Handles TXT, PDF, DOCX, and Markdown files
-- 🧠 **Smart Document Q&A** - Ask questions and get contextual answers from your documents using Google Gemini AI
-- 📞 **Intelligent Booking System** - Book appointments or callbacks with natural language processing
-- 🗂️ **Persistent Vector Storage** - Uses Pinecone for efficient document embeddings and retrieval
-- 💬 **Interactive Chat Interface** - Streamlit-powered web interface for seamless interaction
+- **Multi-Format Document Processing**  
+  Supports TXT, PDF, DOCX, and Markdown files for flexible document ingestion.
 
-## 🏗️ Architecture
+- **Smart Document Q&A**  
+  Ask questions and receive context-aware answers from your documents using Google Gemini AI.
+
+- **Intelligent Booking System**  
+  Schedule appointments or request callbacks using natural language understanding.
+
+- **RAG Optimizations**
+  - **AI-Powered Document Cleaning** – Preprocess documents for better accuracy (Vector Similarity, BM25 Score, Semantic Analysis).
+  - **Ensemble Retrieval** – Combine multiple retrieval strategies for optimal results.
+  - **Vector Reranking** – Prioritize the most relevant content for queries.
+  - **Context-Aware Answer Generation** – Generate answers with improved understanding of document context.
+  - **Prompt Engineering** – Fine-tune prompts for higher quality responses.
+
+## Architecture
 
 ```
 RagSystem/
@@ -31,7 +41,7 @@ RagSystem/
 └── README.md                       # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -74,7 +84,7 @@ Use `uv` to run the Streamlit app:
 uv run streamlit run main.py
 ```
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### 1. Document Processing
 
@@ -108,7 +118,7 @@ User: "Schedule a callback please"
 AI: I'll arrange a callback for you! What's your full name?
 ```
 
-## 🔧 Supported File Types
+## Supported File Types
 
 | Format   | Extension       | Description              |
 | -------- | --------------- | ------------------------ |
@@ -117,7 +127,7 @@ AI: I'll arrange a callback for you! What's your full name?
 | Word     | `.docx`, `.doc` | Microsoft Word documents |
 | Markdown | `.md`           | Markdown files           |
 
-## 🛠️ Features in Detail
+## Features in Detail
 
 ### Document Processing
 
@@ -151,6 +161,6 @@ AI: I'll arrange a callback for you! What's your full name?
 - **Memory Usage**: Restart the application if you notice high memory usage
 - **API Limits**: Be aware of API rate limits for Gemini and Pinecone
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

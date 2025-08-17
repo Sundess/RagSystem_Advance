@@ -1,0 +1,339 @@
+Here is the cleaned and organized text from the policy booklet:
+
+## Life Insurance Policy Booklet
+
+### Introduction
+
+Words that appear in **bold** are explained in the section titled ‘List of definitions used in this document’ on page 13.
+
+This Policy Booklet outlines the features, benefits, and exclusions that apply to this product.
+
+### Who is Covered?
+
+The **life insured** is covered under the policy.
+
+### Premiums
+
+*   Premiums can be paid either monthly or annually, starting on the **policy start date**.
+*   Premiums are guaranteed and will not change unless you make alterations to the policy.
+
+#### Guaranteed Premiums
+
+Your premiums are guaranteed and will remain fixed unless you modify the policy.
+
+#### Increasing Cover (Premium Adjustment)
+
+If selected, this option allows your premium to increase in line with the **Retail Prices Index (RPI)** multiplied by 1.5. The maximum annual increase for your monthly premium is 15%.
+
+### What Happens if Premiums Are Not Paid?
+
+*   The policy may be cancelled if premiums are not paid within 60 days of their due date.
+*   If cancelled, cover will end, and no further premiums will be due. Premiums already paid will not be refunded.
+
+### What Happens to an Annual Premium if a Claim is Paid?
+
+*   If premiums are paid annually and a claim is made, a pro-rata refund of the premium for the remaining months of that year will be issued.
+*   The policy will end upon a claim payment, and no further premiums will be payable.
+
+### Amount of Cover
+
+#### Level Cover
+
+The amount of cover remains constant unless you choose to change it.
+
+#### Decreasing Cover
+
+*   The amount of cover reduces over the policy term.
+*   This is often used to protect a repayment mortgage. The cover decreases based on an estimated interest rate applied to the original cover amount, aligning with your monthly mortgage repayments.
+*   **Important:** If the interest rate applied to your mortgage is higher than the rate used for the decreasing cover, or if your mortgage terms change, the payout may not be sufficient to cover your outstanding mortgage in full.
+*   The interest rate applied to the policy will be detailed in your Policy Booklet. Regularly check that this rate is equal to or higher than your mortgage lender's rate to ensure adequate coverage.
+
+#### Increasing Cover (Amount of Cover)
+
+*   If chosen, the amount of cover will increase annually in line with changes in inflation, as measured by the **Retail Prices Index (RPI)** over a 12-month period. If RPI is unavailable, a comparable index will be used.
+*   You will be notified at least three months before the policy anniversary of the proposed increase in cover and premium.
+*   Cover and premiums will not increase if the RPI change is less than 1%.
+*   If the RPI change is more than 10%, the cover will only increase by 10% per annum.
+*   You have the option to accept or decline the increase.
+
+**Your Options for Increasing Cover:**
+
+*   **Accept the Increase:** No action is needed. Your cover amount and premiums will increase, and your Direct Debit will be updated.
+*   **Decline the Increase:** You must inform us before the specified deadline in the notification. If you decline, your cover will remain the same for another year. Declining three consecutive increases will remove this option permanently, meaning your cover amount will not be adjusted for inflation.
+    *   For joint life policies, approval from both policyholders is required to decline an increase.
+
+### How Long is Cover For?
+
+*   Cover is provided from the **policy start date** until the **policy expiry date**.
+*   Cover ends if:
+    *   The amount of cover is paid out.
+    *   The policy is cancelled by you or us.
+*   Once the policy ends, no further premiums are payable.
+
+### What is Covered?
+
+The amount of cover is paid if, before the **policy expiry date**, the **life insured**:
+
+*   Dies
+*   Is diagnosed with a **terminal illness**
+
+Whichever occurs first.
+
+#### Terminal Illness Cover
+
+*   This is an advance payment of the amount of cover when the **life insured** has a **terminal illness**.
+*   **Terminal illness** is defined as a diagnosis by a hospital consultant of an illness that:
+    *   Has no known cure, or cannot be cured due to progression.
+    *   Is expected to lead to death within 12 months, in the opinion of the hospital consultant and our Medical Officer.
+*   No terminal illness claim can be made after the death of the **life insured**.
+*   The amount paid for **Terminal Illness Cover** is calculated on the date the definition is met and may be less than the amount that would have been paid at death.
+
+### What You Are Not Covered For
+
+*   **Death in the First Year:** The policy will be cancelled if, within the first year, the **life insured** dies as a result of suicide, intentional serious self-injury, or an event where they took their own life.
+    *   **Assessing a Claim for Death in the First Year:** If a suicide verdict is not given, we may determine, in our reasonable opinion, that the **life insured** took their own life. Factors considered include the method and timing of death, available evidence, documentation, and previous medical history.
+
+*   **Eligibility for Claims:**
+    *   The **life insured** does not meet the definitions for cover described in "What is Covered" or "Waiver of Premium".
+    *   Premiums are not up to date.
+    *   The policy was issued subject to the cancellation of specified policies, and you did not cancel them.
+
+*   **Inaccurate Information Provided During Application:**
+    *   **Deliberate or Reckless Inaccurate Information:** We may cancel the policy and refuse to pay the amount of cover, and premiums paid may not be refunded.
+    *   **Careless Inaccurate Information:** We may amend the policy to reflect the terms that would have been offered had accurate information been provided. This could lead to:
+        *   Cancellation of the policy with a refund of premiums, if the policy would not have been issued.
+        *   Changes to policy terms and conditions if the policy would have been issued on different terms.
+        *   Reduction in the amount of cover if higher premiums would have been applied. The formula for this reduction is:
+            *   New amount of cover = (Premium actually charged × Original amount of cover) / Higher Premium
+
+### Waiver of Premium
+
+*   This is an optional benefit at an additional cost.
+*   If the **life insured** meets our definition of **incapacity** for 26 consecutive weeks, you will not have to pay premiums.
+*   This benefit starts after the 26th week of incapacity and continues until the earliest of:
+    *   The end of the period of incapacity.
+    *   Payment of the amount of cover.
+    *   The **policy expiry date**.
+
+#### Incapacity Definition:
+
+*   **If Employed:** Totally incapable of carrying out your normal occupation due to illness or injury occurring after the policy start date, requiring medical/surgical treatment, and not undertaking any other occupation or paid employment.
+*   **If Not in Paid Employment:** Unable to perform three or more of the following **Specified Work Tasks** as a direct result of an illness or injury occurring after the policy start date:
+    *   Walking (more than 200 metres on a level surface).
+    *   Climbing (a flight of 12 stairs and down, using a handrail if needed).
+    *   Lifting (an object weighing 2kg at table height and holding for 60 seconds).
+    *   Bending (to touch the floor and straighten up).
+    *   Getting in and out of a car.
+    *   Writing (legibly with a pen/pencil) or typing using a desktop computer keyboard.
+*   A medical examination by an appointed specialist may be required.
+
+#### Countries Covered for Waiver of Premium:
+
+*   Residing or travelling within the UK.
+*   Residing or travelling within the European Union.
+*   Travelling outside the UK or EU for no more than three consecutive months in any 12 months.
+*   If travelling outside these areas for longer periods, we will assess incapacity claims reasonably.
+
+### Changing Your Policy
+
+You may have the option to increase the amount of cover without further medical information if the policy was taken out before the **life insured's** 55th birthday. This option may not be available if a premium increase was applied due to your application information. Your policy documents will confirm availability.
+
+#### Events Allowing Cover Increase (without further medical information):
+
+*   Entering into marriage or a registered civil partnership.
+*   Divorce or dissolution of a registered civil partnership.
+*   Birth of a child.
+*   Legal adoption or becoming the legal guardian of a child.
+*   Increase in earnings due to a change of employment or promotion.
+*   Increase to a mortgage due to a house move or major home improvements.
+
+*   This option must be used within six months of the event. Relevant documentation may be required.
+
+#### Maximum Increase Amount:
+
+*   The lower of:
+    *   100% of the original amount of cover.
+    *   £200,000.
+    *   For earnings increases (point e), the amount equal to the original cover multiplied by the percentage increase in earnings.
+    *   For mortgage increases (point f), the amount of the mortgage increase.
+*   The total of all increases must not exceed £200,000.
+
+#### How Cover is Provided for an Increase:
+
+*   An additional policy will be issued for the increase. This policy will:
+    *   Not allow further cover increases without new medical evidence.
+    *   Not extend beyond the **life insured’s** 65th birthday or one year after the original policy expiry, whichever is earlier.
+    *   Only include increasing cover if it was selected initially and accepted according to terms.
+    *   Be subject to the premiums, terms, and conditions for such policies at the time of issue.
+*   If the chosen policy is no longer offered, a reasonable alternative will be provided.
+
+#### When This Option is Not Available:
+
+*   After the **life insured's** 55th birthday (or the older life insured's 55th birthday for joint policies).
+*   If a claim under **Waiver of Premium** has been made, until the end of the incapacity period.
+*   If the **life insured** has been diagnosed with, is receiving, or has received treatment for a **terminal illness**.
+
+### Joint Life Policy Separation
+
+If you have a joint life policy, you can separate it if:
+
+*   You divorce.
+*   You dissolve your registered civil partnership.
+*   Either life insured takes over an existing mortgage in one name, or takes out a new mortgage in one name.
+
+*   We will cancel the joint policy and start new single life policies for each life insured.
+*   The request must be made within six months of the event being finalized.
+
+#### What is Needed for Separation:
+
+*   Evidence of the event (e.g., decree absolute, final order for civil partnership dissolution, proof of mortgage ownership).
+*   Consent from both lives insured via an amendment form, including a health and lifestyle questionnaire.
+*   If either individual answers 'yes' to any questions on the amendment form, a full application may be required, and cover may not be offered to both.
+
+#### How Cover is Provided After Separation:
+
+*   New single life policies will have the same cover as the original policy.
+*   New policies will be subject to premiums, terms, and conditions available at the time of the change.
+*   Maximum cover for each new policy will be the lower of the original joint policy cover amount or £1,000,000.
+*   The term of each new policy will not extend beyond the **life insured’s** 70th birthday or one year after the original **policy expiry date**, whichever is earlier.
+
+### Other Changes
+
+You can request the following changes:
+
+*   Increase or decrease the amount of cover.
+*   Extend or reduce the period of cover.
+*   Remove a life insured (for joint life cover).
+*   Change premium frequency between annually and monthly.
+
+#### What May Be Needed for Other Changes:
+
+*   Your consent via an amendment form, including a health and lifestyle questionnaire.
+*   If the **life insured** answers 'yes' to any questions, a full application may be required, and cover may not be offered to both.
+*   Any reasonably required supporting documents.
+
+#### How Changes Are Provided:
+
+*   We will confirm if the original policy needs to be cancelled and a new one issued, potentially with different terms and conditions.
+*   Changes may affect premiums.
+*   We will confirm the changes made.
+
+### General Conditions
+
+*   We may change policy terms and conditions due to changes in legislation, regulation, or taxation, and will notify you in advance.
+*   We reserve the right to cancel the policy, refuse a claim, or take other reasonable action to comply with laws, regulations, sanctions, international guidance, or authorities concerning financial crime risk management.
+*   The policy is governed by English Law.
+*   All communication will be in English.
+*   Exercising policy options is limited to what is permitted by the policy terms and relevant tax legislation.
+
+### Making a Claim
+
+#### Notifying Us of a Claim:
+
+*   Notify us using the claims contact details provided.
+*   You will need the policy number, the **life insured’s** GP/Doctor's contact details, and your contact details.
+
+| Type of Claim           | What We Need                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Life Cover              | The date of death.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Terminal Illness Cover  | Details of the illness and diagnosis.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Waiver of Premium       | You must notify us within 16 weeks of the start of incapacity. Failure to do so may result in the start date of incapacity being considered 16 weeks prior to notification. Exceptions may be made for exceptional medical or other reasons preventing timely notification.                                                                                                                                                                                                                                               |
+
+*   Claims will not be processed until all reasonably required information and documentation is provided.
+
+#### Who We Pay the Cover To
+
+The amount of cover is paid to the legal owner of the policy. This includes the policyholder, trustees, assignees, or personal representatives.
+
+#### Payment of Cover
+
+*   Claims for cover are paid as a lump sum.
+*   Payments are made in pound sterling (GBP) to a UK bank account. Arrangements for transfers outside the UK must be made at your own expense.
+
+#### Assessing Your Claim
+
+*   You may be sent a claim form.
+*   Evidence required depends on the claim type:
+
+| Type of Claim           | Evidence Required                                                              |
+| :---------------------- | :----------------------------------------------------------------------------- |
+| Life Cover              | Death certificate of the **life insured**.                                     |
+| Terminal Illness Cover  | Proof that the **terminal illness** definition has been met.                 |
+| Waiver of Premium       | Proof that the relevant **incapacity** definition has been met.               |
+
+*   We may also request the Policy Booklet and other reasonably required documents.
+
+### Replacement Cover
+
+If a joint life policy is in place and one **life insured** makes a valid claim, you can request to continue cover for the other **life insured** as a new single life policy.
+
+*   This request must be made within six months of the valid claim being paid.
+
+#### What is Needed for Replacement Cover:
+
+*   Consent of the **life insured** who hasn’t claimed, via a replacement cover form including a health and lifestyle questionnaire.
+*   If the **life insured** answers 'yes' to questions, a full application may be required, and cover may not be offered.
+
+#### How Replacement Cover is Provided:
+
+*   The new single life policy will have the same cover as the original policy.
+*   The amount of cover will be the same as the original policy. If Decreasing Life Insurance was chosen, it will be the remaining cover amount at the time of the claim.
+*   The term of the new policy will not extend beyond the **life insured’s** 70th birthday or one year after the original policy expiry, whichever is earlier.
+*   The new policy will be subject to the premiums, terms, and conditions available at the time of the change.
+
+### Useful Contacts
+
+| Reason for Contact                                       | Contact Details     | Contact Address                                                                    |
+| :------------------------------------------------------- | :------------------ | :--------------------------------------------------------------------------------- |
+| General Enquiries, Change Policy, Cancel Policy          | 0370 010 4080       | Legal & General Assurance Society Limited, City Park, The Droveway, Hove, East Sussex BN3 7PY |
+| Claims (Death or Terminal Illness Cover)                 | 0800 137 101        | Legal & General Assurance Society Limited, City Park, The Droveway, Hove, East Sussex BN3 7PY |
+| Waiver of Premium Claims                                 | 0800 068 0789       | Legal & General Assurance Society Limited, City Park, The Droveway, Hove, East Sussex BN3 7PY |
+| Make a Complaint                                         | 0370 010 4080       | Legal & General Assurance Society Limited, Four Central Square, Cardiff CF10 1FS      |
+
+\*We may record and monitor calls. Call charges will vary.
+
+### How to Cancel the Policy
+
+*   You can cancel the policy at any time. You will receive notice of your right to cancel once the policy starts.
+*   If you cancel within 30 days of receiving the notice and policy documents, all premiums paid will be refunded.
+*   If you cancel after 30 days:
+    *   Monthly premiums: No refund is given.
+    *   Annual premiums: A proportionate refund of the annual premium is provided.
+*   Upon cancellation, cover ends, and no further premiums are payable.
+
+### How to Make a Complaint
+
+*   Contact us if you wish to complain or request a copy of our internal complaints handling procedure.
+*   If you remain dissatisfied, you can complain to:
+    *   **The Financial Ombudsman Service**
+    *   Exchange Tower
+    *   London E14 9SR
+    *   Telephone: 0800 023 4567 or 0300 123 9 123
+    *   Email: complaint.info@financial-ombudsman.org.uk
+    *   Website: www.financial-ombudsman.org.uk
+*   Making a complaint will not affect your legal rights.
+
+### The Financial Services Compensation Scheme (FSCS)
+
+*   The FSCS provides compensation if a firm stops trading or is declared in default.
+*   If we face financial difficulties, you may be able to claim for money lost. The FSCS may first arrange for policy continuity (e.g., transfer to another insurer).
+*   Most customers, including individuals and small businesses, are covered by the FSCS. Eligibility and claim amounts depend on circumstances.
+*   The FSCS pays 100% of the claim value.
+*   For more information, visit www.fscs.org.uk or call 0800 678 1100. FSCS rules and application may change.
+
+### Solvency and Financial Conditions Report (SFCR)
+
+We are required to publish an annual SFCR detailing our business, governance, risk profiles, solvency valuation, and capital management. The latest report is available at: www.legalandgeneralgroup.com/investors/library.
+
+### List of Definitions Used in This Document
+
+*   **Life insured:** The person whose life is covered. This applies to all lives covered if there is more than one.
+*   **Our, us or we:** Legal & General Assurance Society Limited.
+*   **Policy expiry date:** The date cover under the policy ends.
+*   **Policy start date:** The date the policy begins.
+*   **You or your:** The owner(s) of the policy legally entitled to receive the amount of cover upon a valid claim. This may include trustees, assignees, personal representatives, or the **life insured**.
+
+---
+*Alternative formats: For copies in large print, braille, PDF, or audio format, call 0370 010 4080. We may record and monitor calls. Call charges will vary.*
+
+*Legal and General Assurance Society Limited. Registered in England and Wales No. 00166055. Registered office: One Coleman Street, London EC2R 5AA. Authorised by the Prudential Regulation Authority and regulated by the Financial Conduct Authority and the Prudential Regulation Authority.*

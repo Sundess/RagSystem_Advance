@@ -4,11 +4,12 @@ from pinecone import Pinecone, ServerlessSpec
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import numpy as np
 
 
 class PineconeManager:
     """
-    Simplified Pinecone manager with persistent embeddings check
+    Enhanced Pinecone manager with document reranking capabilities
     """
 
     def __init__(self):
@@ -135,29 +136,162 @@ class PineconeManager:
                 break
             time.sleep(2)
 
-    def query_documents(self, query, k=3):
-        """Query the vectorstore for relevant documents (alias for compatibility)"""
+    def _calculate_bm25_score(self, query_terms, doc_content):
+        """
+        Calculate BM25 score for a document given query terms
+        Simple implementation for reranking
+        """
+        # Parameters for BM25
+        k1, b = 1.5, 0.75
+
+        # Tokenize document (simple word splitting)
+        doc_terms = doc_content.lower().split()
+        doc_length = len(doc_terms)
+
+        # Estimate average document length (simplified)
+        avg_doc_length = 200  # Rough estimate for chunks
+
+        score = 0.0
+        for term in query_terms:
+            term_lower = term.lower()
+            # Count term frequency in document
+            tf = doc_terms.count(term_lower)
+            if tf > 0:
+                # Simple BM25 scoring
+                idf_component = 1.0  # Simplified, normally would calculate across corpus
+                tf_component = (tf * (k1 + 1)) / (tf + k1 *
+                                                  (1 - b + b * (doc_length / avg_doc_length)))
+                score += idf_component * tf_component
+
+        return score
+
+    def _calculate_semantic_score(self, query, doc_content):
+        """
+        Calculate semantic similarity score using keyword matching and content analysis
+        """
+        query_lower = query.lower()
+        doc_lower = doc_content.lower()
+
+        # Exact phrase matching (higher weight)
+        exact_matches = 0
+        query_words = query_lower.split()
+        for i in range(len(query_words) - 1):
+            phrase = " ".join(query_words[i:i+2])
+            if phrase in doc_lower:
+                exact_matches += 2
+
+        # Individual word matching
+        word_matches = sum(1 for word in query_words if word in doc_lower)
+
+        # Length normalization
+        doc_length = len(doc_content.split())
+        # Prefer documents with reasonable length
+        length_factor = min(1.0, doc_length / 100)
+
+        # Combine scores
+        semantic_score = (exact_matches * 2 + word_matches) * length_factor
+
+        return semantic_score
+
+    def _rerank_documents(self, query, documents_with_scores):
+        """
+        Rerank documents using hybrid scoring (similarity + BM25 + semantic analysis)
+        Returns top 5 documents
+        """
+        print("🔄 Reranking documents using hybrid scoring...")
+
+        # Prepare query terms for BM25
+        query_terms = query.lower().split()
+
+        reranked_docs = []
+
+        for doc, similarity_score in documents_with_scores:
+            # Original similarity score (cosine similarity from vector search)
+            # Convert distance to similarity (Pinecone returns distance, lower is better)
+            # Assuming similarity_score is actually distance
+            vector_sim_score = 1 - similarity_score
+
+            # BM25 score
+            bm25_score = self._calculate_bm25_score(
+                query_terms, doc.page_content)
+
+            # Semantic score
+            semantic_score = self._calculate_semantic_score(
+                query, doc.page_content)
+
+            # Hybrid score combination with weights
+            # You can adjust these weights based on your needs
+            hybrid_score = (
+                0.4 * vector_sim_score +    # Vector similarity weight
+                0.3 * bm25_score +          # BM25 weight
+                0.3 * semantic_score        # Semantic analysis weight
+            )
+
+            reranked_docs.append((doc, hybrid_score, {
+                'vector_score': vector_sim_score,
+                'bm25_score': bm25_score,
+                'semantic_score': semantic_score,
+                'hybrid_score': hybrid_score
+            }))
+
+        # Sort by hybrid score (descending)
+        reranked_docs.sort(key=lambda x: x[1], reverse=True)
+
+        # Log reranking results
+        print("📊 Reranking Results:")
+        for i, (doc, final_score, scores) in enumerate(reranked_docs[:5], 1):
+            print(f"  {i}. Final Score: {final_score:.3f}")
+            print(
+                f"     Vector: {scores['vector_score']:.3f} | BM25: {scores['bm25_score']:.3f} | Semantic: {scores['semantic_score']:.3f}")
+            print(f"     Preview: {doc.page_content[:100]}...")
+            print()
+
+        # Return top 5 documents
+        return [doc for doc, score, detailed_scores in reranked_docs[:5]]
+
+    def query_documents(self, query, k=5):
+        """Query the vectorstore for relevant documents with reranking (alias for compatibility)"""
         return self.search_documents(query, k)
 
-    def search_documents(self, query, k=3):
-        """Search the vectorstore for relevant documents"""
+    def search_documents(self, query, k=5):
+        """
+        Search the vectorstore for relevant documents with enhanced reranking
+        First retrieves k=7 documents, then reranks and returns top 5
+        """
         if not self.vectorstore:
             return []
 
         try:
-            results = self.vectorstore.similarity_search_with_score(query, k=k)
+            # Step 1: Retrieve more documents than needed (k=7)
+            print(f"🔍 Retrieving 7 documents for reranking...")
+            results = self.vectorstore.similarity_search_with_score(query, k=7)
 
-            if results:
-                print(f"📋 Found {len(results)} relevant documents")
-                for i, (doc, score) in enumerate(results, 1):
-                    print(
-                        f"  {i}. Similarity: {1-score:.3f} | Preview: {doc.page_content[:100]}...")
+            if not results:
+                print("❌ No documents found")
+                return []
 
-            return [doc for doc, score in results]
+            print(f"📋 Found {len(results)} documents for reranking")
+
+            # Step 2: Rerank documents using hybrid scoring
+            reranked_docs = self._rerank_documents(query, results)
+
+            # Step 3: Return top 5 reranked documents
+            final_count = min(k, len(reranked_docs))
+            final_docs = reranked_docs[:final_count]
+
+            print(f"✅ Returning top {final_count} reranked documents")
+
+            return final_docs
 
         except Exception as e:
             print(f"❌ Error querying documents: {e}")
             return []
+
+    def similarity_search(self, query, k=5):
+        """
+        Alternative method name for compatibility
+        """
+        return self.search_documents(query, k)
 
     def clear_index(self):
         """Clear all vectors from the index"""
