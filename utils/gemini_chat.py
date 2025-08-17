@@ -9,7 +9,7 @@ class GeminiChat:
 
     def __init__(self):
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
     def generate_answer_with_context(self, query, context):
         """

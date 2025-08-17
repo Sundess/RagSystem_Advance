@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from utils.pinecone_manager import PineconeManager
 from utils.gemini_chat import GeminiChat
 from utils.file_processor import FileProcessor
-from utils.tool_agents import SimplifiedBookingAgent
+from utils.tool_agents import EnhancedBookingAgent
 
 # Load environment variables
 load_dotenv()
@@ -23,7 +23,10 @@ def init_session_state():
         'vectorstore': None,
         'chat_history': [],
         'booking_agent': None,
-        'embeddings_checked': False
+        'embeddings_checked': False,
+        'pinecone_manager': None,  # Cache the manager
+        'gemini_chat': None,      # Cache gemini chat
+        'file_processor': None    # Cache file processor
     }
 
     for key, value in defaults.items():
@@ -31,13 +34,37 @@ def init_session_state():
             st.session_state[key] = value
 
 
-def get_components():
-    """Get cached components"""
+@st.cache_resource
+def get_cached_components():
+    """Get cached components - this prevents reinitialization"""
     pinecone_manager = PineconeManager()
     gemini_chat = GeminiChat()
     file_processor = FileProcessor()
-    booking_agent = SimplifiedBookingAgent(gemini_chat)
-    return pinecone_manager, gemini_chat, file_processor, booking_agent
+    return pinecone_manager, gemini_chat, file_processor
+
+
+def get_components():
+    """Get components from cache or session state"""
+    # Use cached versions first
+    if (not st.session_state.pinecone_manager or
+        not st.session_state.gemini_chat or
+            not st.session_state.file_processor):
+
+        print("🔄 Getting fresh components...")
+        pinecone_manager, gemini_chat, file_processor = get_cached_components()
+
+        # Store in session state to prevent re-creation
+        st.session_state.pinecone_manager = pinecone_manager
+        st.session_state.gemini_chat = gemini_chat
+        st.session_state.file_processor = file_processor
+
+        # Create booking agent with the gemini chat
+        st.session_state.booking_agent = EnhancedBookingAgent(gemini_chat)
+
+    return (st.session_state.pinecone_manager,
+            st.session_state.gemini_chat,
+            st.session_state.file_processor,
+            st.session_state.booking_agent)
 
 
 def check_existing_embeddings(pinecone_manager):
@@ -56,40 +83,57 @@ def check_existing_embeddings(pinecone_manager):
 
 
 def detect_intent(query):
-    """Simple keyword-based intent detection"""
+    """Enhanced intent detection"""
+    # Check if booking is already active
+    if st.session_state.booking_agent and st.session_state.booking_agent.is_booking_active():
+        print(
+            f"🔄 Booking already active, treating as booking input: '{query}'")
+        return "booking"
+
+    # Check for new booking keywords
     booking_keywords = [
         'book', 'schedule', 'appointment', 'meeting', 'callback',
         'call me', 'arrange', 'set up', 'reserve', 'contact me'
     ]
 
     query_lower = query.lower()
-    return "booking" if any(keyword in query_lower for keyword in booking_keywords) else "document_query"
+    is_booking = any(keyword in query_lower for keyword in booking_keywords)
+
+    intent = "booking" if is_booking else "document_query"
+    print(f"🔍 Intent detected: {intent} for query: '{query}' (booking_active: {st.session_state.booking_agent.is_booking_active() if st.session_state.booking_agent else False})")
+
+    return intent
 
 
 def handle_query(query, gemini_chat, pinecone_manager, booking_agent):
-    """Handle user query with simplified routing"""
+    """Handle user query with improved routing"""
     intent = detect_intent(query)
 
-    print(f"🔍 Intent detected: {intent} for query: '{query}'")
-
     if intent == "booking":
-        # Handle booking
-        print(f"📞 Processing booking with agent: {booking_agent}")
-        response, complete = booking_agent.process_message(query)
+        print(f"📞 Processing booking request: '{query}'")
 
-        print(f"📞 Booking response: {response}")
-        print(f"📞 Booking complete: {complete}")
+        try:
+            response, complete = booking_agent.process_message(query)
+            print(f"📞 Booking response: {response}")
+            print(f"📞 Booking complete: {complete}")
 
-        if response:
-            st.session_state.chat_history.append(
-                {"role": "assistant", "content": response})
-            if complete:
-                st.balloons()
-        else:
-            # Fallback response
-            fallback = "I can help you book an appointment! Please tell me what you need."
-            st.session_state.chat_history.append(
-                {"role": "assistant", "content": fallback})
+            if response:
+                st.session_state.chat_history.append(
+                    {"role": "assistant", "content": response})
+                if complete:
+                    st.balloons()
+            else:
+                # Fallback response
+                fallback = "I can help you book an appointment! Please tell me what you need."
+                st.session_state.chat_history.append(
+                    {"role": "assistant", "content": fallback})
+
+        except Exception as e:
+            print(f"❌ Booking error: {e}")
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": f"❌ Error processing booking: {str(e)}"
+            })
 
     else:
         # Handle document queries
@@ -138,31 +182,41 @@ def render_sidebar(file_processor, pinecone_manager):
         # Stats
         st.header("📊 Status")
         if st.session_state.vectorstore:
-            stats = pinecone_manager.get_stats()
-            print(stats)
-            st.metric("Embeddings", stats['total_vectors'])
-            st.success("Ready for queries")
+            try:
+                stats = pinecone_manager.get_stats()
+                print(f"📊 Stats: {stats}")
+                st.metric("Embeddings", stats['total_vectors'])
+                st.success("Ready for queries")
+            except Exception as e:
+                print(f"❌ Error getting stats: {e}")
+                st.warning("Stats unavailable")
         else:
             st.warning("No embeddings")
 
         # Actions
         st.header("🛠️ Actions")
         if st.button("Clear All"):
-            pinecone_manager.clear_index()
-            file_processor.clear_all_files()
-            st.session_state.vectorstore = None
-            st.session_state.chat_history = []
-            st.success("Cleared!")
+            try:
+                pinecone_manager.clear_index()
+                file_processor.clear_all_files()
+                st.session_state.vectorstore = None
+                st.session_state.chat_history = []
+                st.success("Cleared!")
+            except Exception as e:
+                st.error(f"Error clearing: {e}")
 
         # Booking status
         if (st.session_state.booking_agent and
                 st.session_state.booking_agent.is_booking_active()):
-            st.warning("📋 Booking active")
+            st.warning("📋 Booking in progress")
             if st.button("Cancel Booking"):
-                msg = st.session_state.booking_agent.cancel_booking()
-                st.session_state.chat_history.append(
-                    {"role": "assistant", "content": msg})
-                st.rerun()
+                try:
+                    msg = st.session_state.booking_agent.cancel_booking()
+                    st.session_state.chat_history.append(
+                        {"role": "assistant", "content": msg})
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error cancelling booking: {e}")
 
     return uploaded_file, process_btn
 
@@ -194,12 +248,8 @@ def main():
     st.title("🤖 AI Assistant")
     st.markdown("Upload documents and ask questions, or book appointments!")
 
-    # Get components
+    # Get components - this now uses caching
     pinecone_manager, gemini_chat, file_processor, booking_agent = get_components()
-
-    # Store booking agent in session state
-    if not st.session_state.booking_agent:
-        st.session_state.booking_agent = booking_agent
 
     # Check existing embeddings
     check_existing_embeddings(pinecone_manager)
@@ -216,6 +266,12 @@ def main():
     # Chat interface
     st.header("💬 Chat")
 
+    # Show booking status prominently with progress
+    if booking_agent and booking_agent.is_booking_active():
+        progress_info = booking_agent.get_booking_progress()
+        st.info(f"📋 **Booking in Progress** - {progress_info}")
+        st.markdown("*Please provide the requested information to continue*")
+
     # Show latest response above input
     if st.session_state.chat_history:
         latest = st.session_state.chat_history[-1]
@@ -228,22 +284,27 @@ def main():
 
     # Input form
     with st.form("chat_form", clear_on_submit=True):
-        query = st.text_input("Ask a question or book an appointment:")
+        placeholder_text = ("Continue with booking..." if (booking_agent and booking_agent.is_booking_active())
+                            else "Ask a question or book an appointment:")
+        query = st.text_input(placeholder_text)
         submit = st.form_submit_button("Send", type="primary")
 
     # Handle query
     if submit and query.strip():
         st.session_state.chat_history.append(
             {"role": "user", "content": query.strip()})
-        handle_query(query.strip(), gemini_chat, pinecone_manager,
-                     st.session_state.booking_agent)
-        st.rerun()  # This is crucial - forces UI update
+        handle_query(query.strip(), gemini_chat,
+                     pinecone_manager, booking_agent)
+        st.rerun()  # Force UI update
 
     # Action buttons
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🗑️ Clear Chat"):
             st.session_state.chat_history = []
+            # Also cancel any active booking
+            if booking_agent and booking_agent.is_booking_active():
+                booking_agent.cancel_booking()
             st.success("Chat cleared!")
 
     with col2:
@@ -256,13 +317,19 @@ def main():
                             f"**{role_icon} {msg['role'].title()}:** {msg['content']}")
 
     # Booking status in main area
-    if st.session_state.booking_agent and st.session_state.booking_agent.is_booking_active():
-        st.info("📋 Booking in progress... Please provide the requested information.")
-        if st.button("❌ Cancel Current Booking"):
-            cancel_msg = st.session_state.booking_agent.cancel_booking()
-            st.session_state.chat_history.append(
-                {"role": "assistant", "content": cancel_msg})
-            st.rerun()
+    if booking_agent and booking_agent.is_booking_active():
+        with st.container():
+            st.markdown("---")
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.info(
+                    f"📋 **Booking Status**: {booking_agent.current_booking} booking in progress")
+            with col2:
+                if st.button("❌ Cancel", key="cancel_main"):
+                    cancel_msg = booking_agent.cancel_booking()
+                    st.session_state.chat_history.append(
+                        {"role": "assistant", "content": cancel_msg})
+                    st.rerun()
 
 
 if __name__ == "__main__":

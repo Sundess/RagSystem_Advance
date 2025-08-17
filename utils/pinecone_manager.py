@@ -34,7 +34,9 @@ class PineconeManager:
 
     def setup_vectorstore(self):
         """Setup vectorstore with existing embeddings check"""
+        # Always ensure components are initialized
         if not self.embeddings or not self.pc:
+            print("🔄 Initializing components...")
             self.initialize()
 
         # Check if index exists
@@ -171,15 +173,33 @@ class PineconeManager:
             return False
 
     def get_stats(self):
-        """Get index statistics"""
+        """Get index statistics - FIXED VERSION"""
+        # Default stats in case of any error
+        default_stats = {'total_vectors': 0,
+                         'dimension': 768, 'index_fullness': 0.0}
+
         try:
-            if self.pc and self.index_name:
-                index = self.pc.Index(self.index_name)
-                stats = index.describe_index_stats()
-                return {
-                    'total_vectors': stats.total_vector_count,
-                    'dimension': stats.dimension,
-                    'index_fullness': stats.index_fullness
-                }
-        except:
-            return {'total_vectors': 0, 'dimension': 768, 'index_fullness': 0.0}
+            # Ensure components are initialized before checking
+            if not self.pc or not self.index_name:
+                print("⚠️ Pinecone components not initialized, initializing now...")
+                self.initialize()
+
+            # Double check after initialization
+            if not self.pc or not self.index_name:
+                print("❌ Failed to initialize Pinecone components")
+                return default_stats
+
+            index = self.pc.Index(self.index_name)
+            stats = index.describe_index_stats()
+
+            result = {
+                'total_vectors': stats.total_vector_count,
+                'dimension': stats.dimension,
+                'index_fullness': stats.index_fullness
+            }
+            print(f"✅ Got stats successfully: {result}")
+            return result
+
+        except Exception as e:
+            print(f"❌ Error getting stats: {e}")
+            return default_stats
