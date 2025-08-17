@@ -14,8 +14,8 @@
   Schedule appointments or request callbacks using natural language understanding.
 
 - **RAG Optimizations**
-  - **AI-Powered Document Cleaning** – Preprocess documents for better accuracy (Vector Similarity, BM25 Score, Semantic Analysis).
-  - **Ensemble Retrieval** – Combine multiple retrieval strategies for optimal results.
+  - **AI-Powered Document Cleaning** – Preprocess documents for better embeddings generation.
+  - **Ensemble Retrieval** – Combine multiple retrieval strategies for optimal results (Vector Similarity, BM25 Score, Semantic Analysis).
   - **Vector Reranking** – Prioritize the most relevant content for queries.
   - **Context-Aware Answer Generation** – Generate answers with improved understanding of document context.
   - **Prompt Engineering** – Fine-tune prompts for higher quality responses.
