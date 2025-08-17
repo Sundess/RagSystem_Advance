@@ -11,13 +11,13 @@ class ContactInfo(BaseModel):
     email: EmailStr
 
     @field_validator('name')
-    def validate_name(cls, v):
+    def validate_name(self, v):
         if not re.match(r'^[a-zA-Z\s]+$', v):
             raise ValueError('Name should only contain letters and spaces')
         return v.strip().title()
 
     @field_validator('phone')
-    def validate_phone(cls, v):
+    def validate_phone(self, v):
         phone_digits = re.sub(r'\D', '', v)
         if len(phone_digits) < 10 or len(phone_digits) > 10:
             raise ValueError('Phone number should be 10 digits')
@@ -32,7 +32,7 @@ class AppointmentDetails(BaseModel):
     purpose: str = Field(..., min_length=5, max_length=500)
 
     @field_validator('date')
-    def validate_date(cls, v):
+    def validate_date(self, v):
         try:
             date_obj = datetime.strptime(v, '%Y-%m-%d')
             if date_obj.date() < datetime.now().date():
