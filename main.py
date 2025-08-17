@@ -124,7 +124,7 @@ def handle_query(query, gemini_chat, pinecone_manager, booking_agent):
                     st.balloons()
             else:
                 # Fallback response
-                fallback = "I can help you book an appointment! Please tell me what you need."
+                fallback = "I can help you book an appointment or callback! Please tell me what you need."
                 st.session_state.chat_history.append(
                     {"role": "assistant", "content": fallback})
 
@@ -163,7 +163,7 @@ def handle_query(query, gemini_chat, pinecone_manager, booking_agent):
         else:
             st.session_state.chat_history.append({
                 "role": "assistant",
-                "content": "📄 No documents available. Upload some documents first, or I can help you book an appointment!"
+                "content": "📄 No documents available. Upload some documents first, or I can help you book an appointment or callback!"
             })
 
 
@@ -246,7 +246,8 @@ def main():
     init_session_state()
 
     st.title("🤖 AI Assistant")
-    st.markdown("Upload documents and ask questions, or book appointments!")
+    st.markdown(
+        "Upload documents and ask questions, or book appointments or callback!")
 
     # Get components - this now uses caching
     pinecone_manager, gemini_chat, file_processor, booking_agent = get_components()
@@ -285,7 +286,7 @@ def main():
     # Input form
     with st.form("chat_form", clear_on_submit=True):
         placeholder_text = ("Continue with booking..." if (booking_agent and booking_agent.is_booking_active())
-                            else "Ask a question or book an appointment:")
+                            else "Ask a question or book an appointment or callback:")
         query = st.text_input(placeholder_text)
         submit = st.form_submit_button("Send", type="primary")
 
