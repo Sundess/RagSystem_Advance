@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from utils.pinecone_manager import PineconeManager
 from utils.gemini_chat import GeminiChat
 from utils.file_processor import FileProcessor
-from utils.tool_agents import EnhancedBookingAgent
+from utils.tool_agents import BookingAgent
 
 # Load environment variables
 load_dotenv()
@@ -36,7 +36,7 @@ def init_session_state():
 
 @st.cache_resource
 def get_cached_components():
-    """Get cached components - this prevents reinitialization"""
+    """Get cached components to prevent reinitialization"""
     pinecone_manager = PineconeManager()
     gemini_chat = GeminiChat()
     file_processor = FileProcessor()
@@ -59,7 +59,7 @@ def get_components():
         st.session_state.file_processor = file_processor
 
         # Create booking agent with the gemini chat
-        st.session_state.booking_agent = EnhancedBookingAgent(gemini_chat)
+        st.session_state.booking_agent = BookingAgent(gemini_chat)
 
     return (st.session_state.pinecone_manager,
             st.session_state.gemini_chat,

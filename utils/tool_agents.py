@@ -242,7 +242,7 @@ Thank you for booking with us!"""
         status_text.empty()
 
 
-class EnhancedBookingAgent:
+class BookingAgent:
     """Enhanced booking agent with LLM-powered parsing and validation"""
 
     def __init__(self, gemini_chat):
@@ -388,7 +388,7 @@ class EnhancedBookingAgent:
         """Get question text for a specific step"""
         questions = {
             'name': "**What's your full name?**",
-            'phone': "**What's your phone number?** (e.g., (555) 123-4567)",
+            'phone': "**What's your phone number?** (e.g., 9812345678)",
             'email': "**What's your email address?** (e.g., john@example.com)",
             'date': "**When would you like the appointment?**\n(e.g., 'tomorrow', 'next Monday', '2024-12-25', 'today')",
             'time': "**What time would you prefer?**\n(e.g., '3:40 PM', 'around 2 afternoon', '10:30 AM')",
@@ -471,8 +471,8 @@ class EnhancedBookingAgent:
     def is_booking_active(self) -> bool:
         """Check if booking is active"""
         active = self.current_booking is not None
-        print(
-            f"🔍 Booking active check: {active} (type: {self.current_booking})")
+        # print(
+        #     f"🔍 Booking active check: {active} (type: {self.current_booking})")
         return active
 
     def cancel_booking(self) -> str:
@@ -499,4 +499,4 @@ class EnhancedBookingAgent:
 
 
 # Update the SimplifiedBookingAgent alias for backward compatibility
-SimplifiedBookingAgent = EnhancedBookingAgent
+SimplifiedBookingAgent = BookingAgent
