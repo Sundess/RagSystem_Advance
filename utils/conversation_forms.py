@@ -1,254 +1,210 @@
 import re
-import streamlit as st
 from datetime import datetime, timedelta
-from pydantic import BaseModel, Field, validator, EmailStr
-from typing import Optional, Dict, Any
-import time
+from pydantic import BaseModel, Field, field_validator, EmailStr
+from typing import Optional
 
 
-class UserContact(BaseModel):
-    """User contact information with validation"""
+class ContactInfo(BaseModel):
+    """Validated contact information"""
     name: str = Field(..., min_length=2, max_length=100)
-    phone: str = Field(..., min_length=10, max_length=15)
+    phone: str = Field(..., min_length=10, max_length=10)
     email: EmailStr
 
-    @validator('name')
+    @field_validator('name')
     def validate_name(cls, v):
         if not re.match(r'^[a-zA-Z\s]+$', v):
             raise ValueError('Name should only contain letters and spaces')
         return v.strip().title()
 
-    @validator('phone')
+    @field_validator('phone')
     def validate_phone(cls, v):
-        # Remove all non-digit characters
         phone_digits = re.sub(r'\D', '', v)
-        if len(phone_digits) < 10 or len(phone_digits) > 15:
-            raise ValueError('Phone number should be between 10-15 digits')
+        if len(phone_digits) < 10 or len(phone_digits) > 10:
+            raise ValueError('Phone number should be 10 digits')
         return phone_digits
 
 
-class AppointmentBooking(BaseModel):
-    """Appointment booking with validation"""
-    user_info: UserContact
-    appointment_date: str = Field(..., pattern=r'^\d{4}-\d{2}-\d{2}$')
-    appointment_time: str = Field(..., pattern=r'^\d{2}:\d{2}$')
+class AppointmentDetails(BaseModel):
+    """Appointment details with validation"""
+    contact: ContactInfo
+    date: str = Field(..., pattern=r'^\d{4}-\d{2}-\d{2}$')
+    time: str = Field(..., pattern=r'^\d{2}:\d{2}$')
     purpose: str = Field(..., min_length=5, max_length=500)
 
-    @validator('appointment_date')
+    @field_validator('date')
     def validate_date(cls, v):
         try:
             date_obj = datetime.strptime(v, '%Y-%m-%d')
             if date_obj.date() < datetime.now().date():
-                raise ValueError('Appointment date cannot be in the past')
+                raise ValueError('Date cannot be in the past')
             return v
         except ValueError as e:
             if 'does not match format' in str(e):
-                raise ValueError('Date must be in YYYY-MM-DD format')
+                raise ValueError('Use YYYY-MM-DD format')
             raise e
 
 
 class ConversationalForm:
-    """Handles conversational form collection with validation"""
+    """Simplified conversational form handler"""
 
     def __init__(self, gemini_chat):
         self.gemini_chat = gemini_chat
-        self.current_form = None
-        self.form_data = {}
-        self.form_step = 0
-        self.form_fields = []
+        self.reset_form()
 
-    def detect_booking_intent(self, user_message):
-        """Detect if user wants to book an appointment or callback"""
+    def reset_form(self):
+        """Reset form state"""
+        self.form_type = None  # 'callback' or 'appointment'
+        self.current_step = 0
+        self.data = {}
+        self.steps = []
+
+    def detect_booking_intent(self, message):
+        """Detect booking intent in user message"""
         booking_keywords = [
             'call me', 'book appointment', 'schedule', 'appointment',
-            'meeting', 'callback', 'call back', 'contact me', 'book a call'
+            'meeting', 'callback', 'call back', 'contact me', 'book a call',
+            'book meeting', 'arrange meeting', 'set up meeting', 'book an appointment',
+            'schedule meeting', 'schedule appointment', 'arrange appointment',
+            'schedule call', 'arrange call', 'book me', 'set up appointment'
         ]
+        message_lower = message.lower().strip()
+        detected = any(
+            keyword in message_lower for keyword in booking_keywords)
+        # Debug
+        print(f"🔍 Booking intent detection for '{message}': {detected}")
+        return detected
 
-        message_lower = user_message.lower()
-        return any(keyword in message_lower for keyword in booking_keywords)
-
-    def start_contact_form(self):
-        """Start collecting contact information"""
-        self.current_form = "contact"
-        self.form_data = {}
-        self.form_step = 0
-        self.form_fields = ['name', 'phone', 'email']
-
-        return "I'd be happy to arrange a callback for you! Let me collect some information.\n\n**What's your full name?**"
+    def start_callback_form(self):
+        """Start callback booking process"""
+        self.form_type = 'callback'
+        self.current_step = 0
+        self.steps = ['name', 'phone', 'email']
+        return "I'll arrange a callback for you! 📞\n\n**What's your full name?**"
 
     def start_appointment_form(self):
-        """Start collecting appointment information"""
-        self.current_form = "appointment"
-        self.form_data = {}
-        self.form_step = 0
-        self.form_fields = ['name', 'phone',
-                            'email', 'date', 'time', 'purpose']
+        """Start appointment booking process"""
+        self.form_type = 'appointment'
+        self.current_step = 0
+        self.steps = ['name', 'phone', 'email', 'date', 'time', 'purpose']
+        return "Let's book your appointment! 📅\n\n**What's your full name?**"
 
-        return "I'll help you book an appointment! Let me collect some details.\n\n**What's your full name?**"
-
-    def process_form_input(self, user_input):
-        """Process user input for the current form step"""
-        if not self.current_form:
+    def process_step(self, user_input):
+        """Process current form step"""
+        if not self.is_active():
             return None
 
-        current_field = self.form_fields[self.form_step]
+        current_field = self.steps[self.current_step]
 
         try:
             if current_field == 'name':
-                return self._process_name(user_input)
+                return self._handle_name(user_input)
             elif current_field == 'phone':
-                return self._process_phone(user_input)
+                return self._handle_phone(user_input)
             elif current_field == 'email':
-                return self._process_email(user_input)
+                return self._handle_email(user_input)
             elif current_field == 'date':
-                return self._process_date(user_input)
+                return self._handle_date(user_input)
             elif current_field == 'time':
-                return self._process_time(user_input)
+                return self._handle_time(user_input)
             elif current_field == 'purpose':
-                return self._process_purpose(user_input)
+                return self._handle_purpose(user_input)
 
         except Exception as e:
             return f"❌ {str(e)}\n\nPlease try again."
 
-    def _process_name(self, name):
-        """Process and validate name input"""
-        try:
-            validated_name = UserContact(
-                name=name, phone="1234567890", email="test@test.com").name
-            self.form_data['name'] = validated_name
-            self.form_step += 1
+    def _handle_name(self, name):
+        """Handle name input"""
+        # Validate name
+        test_contact = ContactInfo(
+            name=name, phone="1234567890", email="test@test.com")
+        self.data['name'] = test_contact.name
+        self.current_step += 1
+        return f"Thanks {test_contact.name}! 📱\n\n**What's your phone number?**"
 
-            return f"Thanks {validated_name}! 📱 **What's your phone number?**"
+    def _handle_phone(self, phone):
+        """Handle phone input"""
+        test_contact = ContactInfo(
+            name="Test", phone=phone, email="test@test.com")
+        self.data['phone'] = test_contact.phone
+        self.current_step += 1
+        return "Great! 📧\n\n**What's your email address?**"
 
-        except Exception as e:
-            raise ValueError(
-                "Please enter a valid name (letters and spaces only)")
+    def _handle_email(self, email):
+        """Handle email input"""
+        ContactInfo(name="Test", phone="1234567890", email=email)  # Validate
+        self.data['email'] = email
+        self.current_step += 1
 
-    def _process_phone(self, phone):
-        """Process and validate phone input"""
-        try:
-            validated_phone = UserContact(
-                name="Test", phone=phone, email="test@test.com").phone
-            self.form_data['phone'] = validated_phone
-            self.form_step += 1
+        if self.form_type == 'callback':
+            return self._complete_callback()
+        else:
+            return ("Perfect! 📅\n\n**When would you like the appointment?**\n"
+                    "(e.g., '2024-12-25', 'tomorrow', 'next Monday')")
 
-            return f"Got it! 📧 **What's your email address?**"
+    def _handle_date(self, date_input):
+        """Handle date input with natural language parsing"""
+        parsed_date = self._parse_date(date_input)
+        self.data['date'] = parsed_date
+        self.current_step += 1
+        return (f"Date set for {parsed_date}! 🕐\n\n"
+                "**What time would you prefer?**\n(e.g., '10:30', '2:00 PM', '14:00')")
 
-        except Exception as e:
-            raise ValueError(
-                "Please enter a valid phone number (10-15 digits)")
+    def _handle_time(self, time_input):
+        """Handle time input"""
+        parsed_time = self._parse_time(time_input)
+        self.data['time'] = parsed_time
+        self.current_step += 1
+        return (f"Time set for {parsed_time}! 📝\n\n"
+                "**What's the purpose of your appointment?**")
 
-    def _process_email(self, email):
-        """Process and validate email input"""
-        try:
-            UserContact(name="Test", phone="1234567890", email=email)
-            self.form_data['email'] = email
-            self.form_step += 1
-
-            if self.current_form == "contact":
-                return self._complete_contact_form()
-            else:
-                return f"Perfect! 📅 **When would you like to schedule the appointment?** (e.g., 'next Monday', '2024-12-25', 'tomorrow')"
-
-        except Exception as e:
-            raise ValueError("Please enter a valid email address")
-
-    def _process_date(self, date_input):
-        """Process and validate date input with natural language parsing"""
-        try:
-            parsed_date = self._parse_natural_date(date_input)
-            self.form_data['date'] = parsed_date
-            self.form_step += 1
-
-            return f"Great! Date set for {parsed_date}. 🕐 **What time would you prefer?** (e.g., '10:30', '2:00 PM', '14:00')"
-
-        except Exception as e:
-            raise ValueError(f"Please enter a valid date. {str(e)}")
-
-    def _process_time(self, time_input):
-        """Process and validate time input"""
-        try:
-            parsed_time = self._parse_time(time_input)
-            self.form_data['time'] = parsed_time
-            self.form_step += 1
-
-            return f"Time set for {parsed_time}. 📝 **What's the purpose of this appointment?** (brief description)"
-
-        except Exception as e:
-            raise ValueError(
-                "Please enter a valid time (e.g., '10:30', '2:00 PM', '14:00')")
-
-    def _process_purpose(self, purpose):
-        """Process and validate appointment purpose"""
+    def _handle_purpose(self, purpose):
+        """Handle purpose input"""
         if len(purpose.strip()) < 5:
             raise ValueError(
-                "Please provide a more detailed purpose (at least 5 characters)")
+                "Please provide more details (at least 5 characters)")
 
-        self.form_data['purpose'] = purpose.strip()
-        return self._complete_appointment_form()
+        self.data['purpose'] = purpose.strip()
+        return self._complete_appointment()
 
-    def _parse_natural_date(self, date_input):
-        """Parse natural language date input"""
+    def _parse_date(self, date_input):
+        """Parse date with natural language support"""
         date_input = date_input.lower().strip()
         today = datetime.now().date()
 
         # Handle relative dates
-        if 'today' in date_input:
+        if date_input == 'today':
             return today.strftime('%Y-%m-%d')
-        elif 'tomorrow' in date_input:
+        elif date_input == 'tomorrow':
             return (today + timedelta(days=1)).strftime('%Y-%m-%d')
         elif 'next monday' in date_input:
-            days_ahead = 0 - today.weekday()  # Monday is 0
-            if days_ahead <= 0:  # Target day already happened this week
-                days_ahead += 7
-            return (today + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
-        elif 'next tuesday' in date_input:
-            days_ahead = 1 - today.weekday()
-            if days_ahead <= 0:
-                days_ahead += 7
-            return (today + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
-        elif 'next wednesday' in date_input:
-            days_ahead = 2 - today.weekday()
-            if days_ahead <= 0:
-                days_ahead += 7
-            return (today + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
-        elif 'next thursday' in date_input:
-            days_ahead = 3 - today.weekday()
-            if days_ahead <= 0:
-                days_ahead += 7
-            return (today + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
-        elif 'next friday' in date_input:
-            days_ahead = 4 - today.weekday()
+            days_ahead = 0 - today.weekday()
             if days_ahead <= 0:
                 days_ahead += 7
             return (today + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
 
-        # Try to parse YYYY-MM-DD format
-        try:
-            if re.match(r'^\d{4}-\d{2}-\d{2}$', date_input):
-                parsed_date = datetime.strptime(date_input, '%Y-%m-%d').date()
-                if parsed_date < today:
-                    raise ValueError("Date cannot be in the past")
-                return date_input
-        except:
-            pass
+        # Try YYYY-MM-DD format
+        if re.match(r'^\d{4}-\d{2}-\d{2}$', date_input):
+            date_obj = datetime.strptime(date_input, '%Y-%m-%d').date()
+            if date_obj < today:
+                raise ValueError("Date cannot be in the past")
+            return date_input
 
-        # Try other common formats
-        common_formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y']
-        for fmt in common_formats:
+        # Try other formats
+        formats = ['%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y']
+        for fmt in formats:
             try:
-                parsed_date = datetime.strptime(date_input, fmt).date()
-                if parsed_date < today:
+                date_obj = datetime.strptime(date_input, fmt).date()
+                if date_obj < today:
                     raise ValueError("Date cannot be in the past")
-                return parsed_date.strftime('%Y-%m-%d')
+                return date_obj.strftime('%Y-%m-%d')
             except:
                 continue
 
         raise ValueError(
-            "Please use a format like 'YYYY-MM-DD', 'tomorrow', or 'next Monday'")
+            "Use format like 'YYYY-MM-DD', 'tomorrow', or 'next Monday'")
 
     def _parse_time(self, time_input):
-        """Parse time input in various formats"""
+        """Parse time in various formats"""
         time_input = time_input.lower().strip()
 
         # Handle 12-hour format
@@ -272,104 +228,73 @@ class ConversationalForm:
         except:
             pass
 
-        # Handle hour only
-        try:
-            hour = int(time_input)
-            if 0 <= hour <= 23:
-                return f"{hour:02d}:00"
-        except:
-            pass
+        raise ValueError("Use format like '10:30', '2:00 PM', or '14:00'")
 
-        raise ValueError(
-            "Please enter time in format like '10:30', '2:00 PM', or '14:00'")
+    def _complete_callback(self):
+        """Complete callback booking"""
+        contact = ContactInfo(
+            name=self.data['name'],
+            phone=self.data['phone'],
+            email=self.data['email']
+        )
 
-    def _complete_contact_form(self):
-        """Complete contact form and trigger callback booking"""
-        try:
-            contact_info = UserContact(
-                name=self.form_data['name'],
-                phone=self.form_data['phone'],
-                email=self.form_data['email']
-            )
+        result = f"""✅ **Callback Request Submitted!**
 
-            # Reset form
-            self.current_form = None
-            self.form_data = {}
-            self.form_step = 0
-
-            # Trigger booking process
-            return self._book_callback(contact_info)
-
-        except Exception as e:
-            return f"❌ Error completing form: {str(e)}"
-
-    def _complete_appointment_form(self):
-        """Complete appointment form and trigger booking"""
-        try:
-            contact_info = UserContact(
-                name=self.form_data['name'],
-                phone=self.form_data['phone'],
-                email=self.form_data['email']
-            )
-
-            appointment = AppointmentBooking(
-                user_info=contact_info,
-                appointment_date=self.form_data['date'],
-                appointment_time=self.form_data['time'],
-                purpose=self.form_data['purpose']
-            )
-
-            # Reset form
-            self.current_form = None
-            self.form_data = {}
-            self.form_step = 0
-
-            # Trigger booking process
-            return self._book_appointment(appointment)
-
-        except Exception as e:
-            return f"❌ Error completing form: {str(e)}"
-
-    def _book_callback(self, contact_info):
-        """Simulate callback booking process"""
-        return f"""✅ **Callback Request Submitted!**
-
-📋 **Your Details:**
-- **Name:** {contact_info.name}
-- **Phone:** {contact_info.phone}
-- **Email:** {contact_info.email}
+📋 **Details:**
+• **Name:** {contact.name}
+• **Phone:** {contact.phone}
+• **Email:** {contact.email}
 
 🔄 **Processing booking...**"""
 
-    def _book_appointment(self, appointment):
-        """Simulate appointment booking process"""
-        return f"""✅ **Appointment Booking Submitted!**
+        self.reset_form()
+        return result
 
-📋 **Your Details:**
-- **Name:** {appointment.user_info.name}
-- **Phone:** {appointment.user_info.phone}
-- **Email:** {appointment.user_info.email}
+    def _complete_appointment(self):
+        """Complete appointment booking"""
+        contact = ContactInfo(
+            name=self.data['name'],
+            phone=self.data['phone'],
+            email=self.data['email']
+        )
+
+        appointment = AppointmentDetails(
+            contact=contact,
+            date=self.data['date'],
+            time=self.data['time'],
+            purpose=self.data['purpose']
+        )
+
+        result = f"""✅ **Appointment Booking Submitted!**
+
+📋 **Contact Details:**
+• **Name:** {appointment.contact.name}
+• **Phone:** {appointment.contact.phone}
+• **Email:** {appointment.contact.email}
 
 📅 **Appointment Details:**
-- **Date:** {appointment.appointment_date}
-- **Time:** {appointment.appointment_time}
-- **Purpose:** {appointment.purpose}
+• **Date:** {appointment.date}
+• **Time:** {appointment.time}
+• **Purpose:** {appointment.purpose}
 
 🔄 **Processing booking...**"""
 
-    def is_form_active(self):
-        """Check if a form is currently active"""
-        return self.current_form is not None
+        self.reset_form()
+        return result
 
-    def cancel_form(self):
-        """Cancel the current form"""
-        self.current_form = None
-        self.form_data = {}
-        self.form_step = 0
-        return "❌ Form cancelled. How else can I help you?"
+    def is_active(self):
+        """Check if form is currently active"""
+        return self.form_type is not None
 
+    def cancel(self):
+        """Cancel current form"""
+        self.reset_form()
+        return "❌ Booking cancelled. How else can I help you?"
 
-def simulate_booking_process():
-    """Simulate the booking process with delay"""
-    time.sleep(10)
-    return "🎉 **Booking Confirmed!** You will receive a confirmation email shortly."
+    def get_form_data(self):
+        """Get current form data"""
+        return self.data.copy()
+
+    def get_booking_type(self):
+        """Get current booking type"""
+        return self.form_type

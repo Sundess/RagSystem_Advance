@@ -1,217 +1,251 @@
-from typing import Dict, Any, List
-import json
+from langchain.tools import BaseTool
+from langchain.callbacks.manager import CallbackManagerForToolRun
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any, Type
 import streamlit as st
 import time
-from pydantic import BaseModel
+import json
 
 
-class BookingTool(BaseModel):
-    """Tool for handling booking operations"""
-    name: str = "booking_tool"
-    description: str = "Handles appointment and callback bookings"
+class BookingInput(BaseModel):
+    """Input schema for booking tool"""
+    booking_type: str = Field(
+        description="Type of booking: 'appointment' or 'callback'")
+    contact_data: Dict[str, Any] = Field(
+        description="Contact information dictionary")
 
-    def execute(self, action: str, data: Dict[str, Any]) -> str:
-        """Execute booking action"""
-        if action == "callback":
-            return self._process_callback(data)
-        elif action == "appointment":
-            return self._process_appointment(data)
+
+class BookingTool(BaseTool):
+    """LangChain tool for handling bookings"""
+
+    name: str = "booking_processor"
+    description: str = """
+    Process appointment and callback bookings. 
+    Input should be a dictionary with 'booking_type' (appointment/callback) and 'contact_data'.
+    """
+    args_schema: Type[BaseModel] = BookingInput
+
+    def _run(
+        self,
+        booking_type: str,
+        contact_data: Dict[str, Any],
+        run_manager: Optional[CallbackManagerForToolRun] = None
+    ) -> str:
+        """Execute booking process"""
+
+        if booking_type == "callback":
+            return self._process_callback(contact_data)
+        elif booking_type == "appointment":
+            return self._process_appointment(contact_data)
         else:
-            return f"❌ Unknown booking action: {action}"
+            return f"❌ Unknown booking type: {booking_type}"
 
     def _process_callback(self, data: Dict[str, Any]) -> str:
         """Process callback booking"""
-        st.info("📞 **Processing Callback Request...**")
+        # Show progress
+        self._show_progress("callback")
 
-        # Show booking progress
-        progress_bar = st.progress(0)
-        status_text = st.empty()
+        ref_id = f"CB-{int(time.time())}"
 
-        for i in range(101):
-            progress_bar.progress(i)
-            if i < 30:
-                status_text.text("🔍 Validating contact information...")
-            elif i < 60:
-                status_text.text("📝 Creating callback ticket...")
-            elif i < 90:
-                status_text.text("📤 Sending confirmation...")
-            else:
-                status_text.text("✅ Finalizing booking...")
+        return json.dumps({
+            "status": "success",
+            "type": "callback",
+            "reference_id": ref_id,
+            "message": f"""🎉 **Callback Booked Successfully!**
 
-            time.sleep(0.1)  # 10 seconds total
+📞 **Details:**
+• **Reference:** {ref_id}
+• **Name:** {data.get('name', 'N/A')}
+• **Phone:** {data.get('phone', 'N/A')}
+• **Email:** {data.get('email', 'N/A')}
 
-        # Clear progress indicators
-        progress_bar.empty()
-        status_text.empty()
-
-        return f"""🎉 **Callback Booked Successfully!**
-
-📞 **Confirmation Details:**
-- **Reference ID:** CB-{int(time.time())}
-- **Name:** {data.get('name', 'N/A')}
-- **Phone:** {data.get('phone', 'N/A')}
-- **Email:** {data.get('email', 'N/A')}
-
-📧 A confirmation email has been sent to your email address.
-📱 You'll receive a call within 24-48 hours.
-
-Thank you for choosing our services! 🙏"""
+📧 Confirmation email sent!
+📱 You'll receive a call within 24-48 hours."""
+        })
 
     def _process_appointment(self, data: Dict[str, Any]) -> str:
         """Process appointment booking"""
-        st.info("📅 **Processing Appointment Booking...**")
+        # Show progress
+        self._show_progress("appointment")
 
-        # Show booking progress
+        ref_id = f"APT-{int(time.time())}"
+
+        return json.dumps({
+            "status": "success",
+            "type": "appointment",
+            "reference_id": ref_id,
+            "message": f"""🎉 **Appointment Booked Successfully!**
+
+📅 **Details:**
+• **Reference:** {ref_id}
+• **Name:** {data.get('name', 'N/A')}
+• **Phone:** {data.get('phone', 'N/A')}
+• **Email:** {data.get('email', 'N/A')}
+• **Date:** {data.get('date', 'N/A')}
+• **Time:** {data.get('time', 'N/A')}
+• **Purpose:** {data.get('purpose', 'N/A')}
+
+📧 Calendar invite sent!
+⏰ Reminder set for 24 hours before."""
+        })
+
+    def _show_progress(self, booking_type: str):
+        """Show booking progress"""
+        steps = [
+            "🔍 Validating information...",
+            "📝 Creating booking...",
+            "📤 Sending confirmation...",
+            "✅ Finalizing..."
+        ]
+
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        for i in range(101):
-            progress_bar.progress(i)
-            if i < 20:
-                status_text.text("🔍 Validating appointment details...")
-            elif i < 40:
-                status_text.text("📅 Checking calendar availability...")
-            elif i < 60:
-                status_text.text("📝 Creating appointment slot...")
-            elif i < 80:
-                status_text.text("📤 Sending calendar invite...")
-            else:
-                status_text.text("✅ Finalizing appointment...")
+        for i, step in enumerate(steps):
+            progress = int((i + 1) * 100 / len(steps))
+            progress_bar.progress(progress)
+            status_text.text(step)
+            time.sleep(1.5)
 
-            time.sleep(0.1)  # 10 seconds total
-
-        # Clear progress indicators
         progress_bar.empty()
         status_text.empty()
 
-        return f"""🎉 **Appointment Booked Successfully!**
 
-📅 **Confirmation Details:**
-- **Reference ID:** APT-{int(time.time())}
-- **Name:** {data.get('name', 'N/A')}
-- **Phone:** {data.get('phone', 'N/A')}
-- **Email:** {data.get('email', 'N/A')}
-- **Date:** {data.get('date', 'N/A')}
-- **Time:** {data.get('time', 'N/A')}
-- **Purpose:** {data.get('purpose', 'N/A')}
+class SimplifiedBookingAgent:
+    """Simplified booking agent using LangChain tools"""
 
-📧 Calendar invite sent to your email address.
-⏰ You'll receive a reminder 24 hours before the appointment.
-
-Looking forward to meeting with you! 🤝"""
-
-
-class ToolAgent:
-    """Agent that manages and executes various tools"""
-
-    def __init__(self):
-        self.tools = {
-            "booking": BookingTool()
+    def __init__(self, gemini_chat):
+        self.gemini_chat = gemini_chat
+        self.booking_tool = BookingTool()
+        self.current_booking = None
+        self.form_data = {}
+        self.form_step = 0
+        self.booking_steps = {
+            'callback': ['name', 'phone', 'email'],
+            'appointment': ['name', 'phone', 'email', 'date', 'time', 'purpose']
         }
 
-    def detect_tool_call(self, message: str) -> tuple:
-        """Detect if message requires a tool call"""
-        message_lower = message.lower()
-
-        # Booking tool triggers
-        booking_triggers = [
-            'book appointment', 'schedule appointment', 'book meeting',
-            'call me back', 'callback', 'schedule call', 'arrange call',
-            'book a call', 'set up meeting', 'make appointment'
-        ]
-
-        for trigger in booking_triggers:
-            if trigger in message_lower:
-                return ("booking", self._determine_booking_action(message_lower))
-
-        return (None, None)
-
-    def _determine_booking_action(self, message: str) -> str:
-        """Determine specific booking action"""
-        callback_keywords = ['call me', 'callback', 'call back', 'phone me']
-
-        if any(keyword in message for keyword in callback_keywords):
-            return "callback"
-        else:
-            return "appointment"
-
-    def execute_tool(self, tool_name: str, action: str, data: Dict[str, Any]) -> str:
-        """Execute a specific tool with given data"""
-        if tool_name not in self.tools:
-            return f"❌ Tool '{tool_name}' not found"
-
-        try:
-            return self.tools[tool_name].execute(action, data)
-        except Exception as e:
-            return f"❌ Error executing {tool_name}: {str(e)}"
-
-    def list_available_tools(self) -> List[str]:
-        """List all available tools"""
-        return list(self.tools.keys())
-
-    def get_tool_info(self, tool_name: str) -> str:
-        """Get information about a specific tool"""
-        if tool_name in self.tools:
-            return self.tools[tool_name].description
-        return f"Tool '{tool_name}' not found"
-
-
-class BookingAgent:
-    """Specialized agent for handling booking operations"""
-
-    def __init__(self, conversation_form, tool_agent):
-        self.conversation_form = conversation_form
-        self.tool_agent = tool_agent
-
     def process_message(self, message: str) -> tuple:
-        """Process message and determine if booking is needed"""
+        """Process user message for booking"""
 
-        # Check if form is active
-        if self.conversation_form.is_form_active():
-            form_response = self.conversation_form.process_form_input(message)
+        print(f"🤖 BookingAgent processing: '{message}'")
+        print(f"🤖 Current booking type: {self.current_booking}")
+        print(f"🤖 Form step: {self.form_step}")
+        print(f"🤖 Form data: {self.form_data}")
 
-            # Check if form is completed (contains booking confirmation)
-            if form_response and "Processing booking..." in form_response:
-                # Extract data and trigger tool
-                form_data = self._extract_form_data()
-                action = self._get_booking_action()
-
-                # Execute tool
-                tool_response = self.tool_agent.execute_tool(
-                    "booking", action, form_data)
-
-                return (form_response + "\n\n" + tool_response, True)
-
-            return (form_response, False)
+        # Check if currently in booking flow
+        if self.current_booking:
+            print("📝 Processing form step...")
+            return self._handle_form_step(message)
 
         # Detect new booking intent
-        if self.conversation_form.detect_booking_intent(message):
-            tool_name, action = self.tool_agent.detect_tool_call(message)
+        if self._detect_booking_intent(message):
+            booking_type = self._determine_booking_type(message)
+            self.current_booking = booking_type
+            self.form_step = 0
+            self.form_data = {}
 
-            if action == "callback":
-                response = self.conversation_form.start_contact_form()
+            print(f"📞 Starting {booking_type} booking...")
+
+            if booking_type == 'callback':
+                return ("I'll arrange a callback! 📞\n\n**What's your name?**", False)
             else:
-                response = self.conversation_form.start_appointment_form()
+                return ("Let's book your appointment! 📅\n\n**What's your name?**", False)
 
-            return (response, False)
-
+        print("❌ No booking intent detected")
         return (None, False)
 
-    def _extract_form_data(self) -> Dict[str, Any]:
-        """Extract data from completed form"""
-        return self.conversation_form.form_data
+    def _detect_booking_intent(self, message: str) -> bool:
+        """Simple keyword-based intent detection"""
+        booking_keywords = [
+            'book', 'schedule', 'appointment', 'meeting', 'callback',
+            'call me', 'arrange', 'set up', 'reserve', 'appoint'
+        ]
+        message_lower = message.lower()
+        detected = any(
+            keyword in message_lower for keyword in booking_keywords)
+        print(f"🔍 Booking intent detection for '{message}': {detected}")
+        return detected
 
-    def _get_booking_action(self) -> str:
-        """Get the current booking action"""
-        if self.conversation_form.current_form == "contact":
-            return "callback"
-        else:
-            return "appointment"
+    def _determine_booking_type(self, message: str) -> str:
+        """Determine if callback or appointment"""
+        callback_keywords = ['call me', 'callback', 'call back', 'phone']
+        message_lower = message.lower()
 
-    def cancel_current_booking(self) -> str:
-        """Cancel current booking process"""
-        return self.conversation_form.cancel_form()
+        if any(keyword in message_lower for keyword in callback_keywords):
+            return 'callback'
+        return 'appointment'
+
+    def _handle_form_step(self, user_input: str) -> tuple:
+        """Handle current form step"""
+        current_step = self.booking_steps[self.current_booking][self.form_step]
+
+        print(f"📝 Handling step '{current_step}' with input: '{user_input}'")
+
+        # Store the input
+        self.form_data[current_step] = user_input.strip()
+        self.form_step += 1
+
+        print(f"📝 Updated form data: {self.form_data}")
+        print(
+            f"📝 Next step: {self.form_step}/{len(self.booking_steps[self.current_booking])}")
+
+        # Check if form is complete
+        if self.form_step >= len(self.booking_steps[self.current_booking]):
+            print("✅ Form complete, processing booking...")
+            return self._complete_booking()
+
+        # Ask next question
+        return self._get_next_question()
+
+    def _get_next_question(self) -> tuple:
+        """Get next question in the form"""
+        next_step = self.booking_steps[self.current_booking][self.form_step]
+
+        questions = {
+            'name': "**What's your name?**",
+            'phone': "**What's your phone number?**",
+            'email': "**What's your email address?**",
+            'date': "**When would you like the appointment?** (e.g., '2024-12-25')",
+            'time': "**What time?** (e.g., '10:30 AM')",
+            'purpose': "**What's the purpose of the appointment?**"
+        }
+
+        return (questions.get(next_step, "Please continue..."), False)
+
+    def _complete_booking(self) -> tuple:
+        """Complete the booking using LangChain tool"""
+        try:
+            # Use the LangChain tool to process booking
+            result = self.booking_tool._run(
+                booking_type=self.current_booking,
+                contact_data=self.form_data
+            )
+
+            # Parse result
+            booking_result = json.loads(result)
+            response = booking_result['message']
+
+            # Reset form
+            self._reset_form()
+
+            return (response, True)
+
+        except Exception as e:
+            self._reset_form()
+            return (f"❌ Error completing booking: {str(e)}", False)
+
+    def _reset_form(self):
+        """Reset booking form"""
+        self.current_booking = None
+        self.form_data = {}
+        self.form_step = 0
 
     def is_booking_active(self) -> bool:
-        """Check if booking process is active"""
-        return self.conversation_form.is_form_active()
+        """Check if booking is active"""
+        return self.current_booking is not None
+
+    def cancel_booking(self) -> str:
+        """Cancel current booking"""
+        self._reset_form()
+        return "❌ Booking cancelled. How else can I help you?"
