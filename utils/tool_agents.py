@@ -11,10 +11,11 @@ from datetime import datetime, timedelta
 
 class BookingInput(BaseModel):
     """Input schema for booking tool"""
+
     booking_type: str = Field(
-        description="Type of booking: 'appointment' or 'callback'")
-    contact_data: Dict[str, Any] = Field(
-        description="Contact information dictionary")
+        description="Type of booking: 'appointment' or 'callback'"
+    )
+    contact_data: Dict[str, Any] = Field(description="Contact information dictionary")
 
 
 class InputParser:
@@ -52,14 +53,20 @@ Response (YYYY-MM-DD format only):
             response = self.gemini_chat.generate_simple_answer(prompt).strip()
 
             # Validate the response format
-            if re.match(r'^\d{4}-\d{2}-\d{2}$', response):
+            if re.match(r"^\d{4}-\d{2}-\d{2}$", response):
                 # Check if date is not in the past
-                parsed_date = datetime.strptime(response, '%Y-%m-%d').date()
+                parsed_date = datetime.strptime(response, "%Y-%m-%d").date()
                 if parsed_date < self.current_date.date():
-                    return "", "Date cannot be in the past. Please choose a future date."
+                    return (
+                        "",
+                        "Date cannot be in the past. Please choose a future date.",
+                    )
                 return response, ""
             else:
-                return "", "Please provide a clearer date (e.g., 'tomorrow', 'next Monday', '2024-12-25')"
+                return (
+                    "",
+                    "Please provide a clearer date (e.g., 'tomorrow', 'next Monday', '2024-12-25')",
+                )
 
         except Exception as e:
             return "", "Error parsing date. Please try again with a clearer format."
@@ -90,10 +97,13 @@ Response (HH:MM AM/PM format only):
             response = self.gemini_chat.generate_simple_answer(prompt).strip()
 
             # Validate the response format (HH:MM AM/PM)
-            if re.match(r'^\d{1,2}:\d{2}\s?(AM|PM)$', response, re.IGNORECASE):
+            if re.match(r"^\d{1,2}:\d{2}\s?(AM|PM)$", response, re.IGNORECASE):
                 return response, ""
             else:
-                return "", "Please provide a clearer time (e.g., '3:40 PM', '10:30 AM', '2 PM')"
+                return (
+                    "",
+                    "Please provide a clearer time (e.g., '3:40 PM', '10:30 AM', '2 PM')",
+                )
 
         except Exception as e:
             return "", "Error parsing time. Please try again with a clearer format."
@@ -103,7 +113,7 @@ Response (HH:MM AM/PM format only):
         email = email.strip().lower()
 
         # Basic email validation
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if re.match(email_pattern, email):
             return email, ""
         else:
@@ -112,15 +122,10 @@ Response (HH:MM AM/PM format only):
     def validate_phone(self, phone: str) -> tuple[str, str]:
         """Validate and format phone number"""
         # Remove all non-digit characters
-        digits = re.sub(r'\D', '', phone)
+        digits = re.sub(r"\D", "", phone)
 
         if len(digits) == 10:
             # Format as (XXX) XXX-XXXX
-            formatted = f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
-            return formatted, ""
-        elif len(digits) == 11 and digits.startswith('1'):
-            # Handle US number with country code
-            digits = digits[1:]
             formatted = f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
             return formatted, ""
         else:
@@ -133,11 +138,14 @@ Response (HH:MM AM/PM format only):
         if len(name) < 2:
             return "", "Please provide your full name (at least 2 characters)"
 
-        if not re.match(r'^[a-zA-Z\s\'-]+$', name):
-            return "", "Please provide a valid name (letters, spaces, hyphens, and apostrophes only)"
+        if not re.match(r"^[a-zA-Z\s\'-]+$", name):
+            return (
+                "",
+                "Please provide a valid name (letters, spaces, hyphens, and apostrophes only)",
+            )
 
         # Format name (title case)
-        formatted_name = ' '.join(word.capitalize() for word in name.split())
+        formatted_name = " ".join(word.capitalize() for word in name.split())
         return formatted_name, ""
 
 
@@ -155,7 +163,7 @@ class BookingTool(BaseTool):
         self,
         booking_type: str,
         contact_data: Dict[str, Any],
-        run_manager: Optional[CallbackManagerForToolRun] = None
+        run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute booking process"""
 
@@ -173,23 +181,25 @@ class BookingTool(BaseTool):
 
         ref_id = f"CB-{int(time.time())}"
 
-        return json.dumps({
-            "status": "success",
-            "type": "callback",
-            "reference_id": ref_id,
-            "message": f"""🎉 **Callback Booked Successfully!**
+        return json.dumps(
+            {
+                "status": "success",
+                "type": "callback",
+                "reference_id": ref_id,
+                "message": f"""🎉 **Callback Booked Successfully!**
 
 📞 **Contact Details:**
 • **Reference:** {ref_id}
-• **Name:** {data.get('name', 'N/A')}
-• **Phone:** {data.get('phone', 'N/A')}
-• **Email:** {data.get('email', 'N/A')}
+• **Name:** {data.get("name", "N/A")}
+• **Phone:** {data.get("phone", "N/A")}
+• **Email:** {data.get("email", "N/A")}
 
-📧 **Confirmation email sent to {data.get('email', 'your email')}**
+📧 **Confirmation email sent to {data.get("email", "your email")}**
 📱 **You'll receive a call within 24-48 hours**
 
-Thank you for choosing our services!"""
-        })
+Thank you for choosing our services!""",
+            }
+        )
 
     def _process_appointment(self, data: Dict[str, Any]) -> str:
         """Process appointment booking"""
@@ -198,27 +208,29 @@ Thank you for choosing our services!"""
 
         ref_id = f"APT-{int(time.time())}"
 
-        return json.dumps({
-            "status": "success",
-            "type": "appointment",
-            "reference_id": ref_id,
-            "message": f"""🎉 **Appointment Booked Successfully!**
+        return json.dumps(
+            {
+                "status": "success",
+                "type": "appointment",
+                "reference_id": ref_id,
+                "message": f"""🎉 **Appointment Booked Successfully!**
 
 📅 **Appointment Details:**
 • **Reference:** {ref_id}
-• **Name:** {data.get('name', 'N/A')}
-• **Phone:** {data.get('phone', 'N/A')}
-• **Email:** {data.get('email', 'N/A')}
-• **Date:** {data.get('date', 'N/A')}
-• **Time:** {data.get('time', 'N/A')}
-• **Purpose:** {data.get('purpose', 'N/A')}
+• **Name:** {data.get("name", "N/A")}
+• **Phone:** {data.get("phone", "N/A")}
+• **Email:** {data.get("email", "N/A")}
+• **Date:** {data.get("date", "N/A")}
+• **Time:** {data.get("time", "N/A")}
+• **Purpose:** {data.get("purpose", "N/A")}
 
-📧 **Calendar invite sent to {data.get('email', 'your email')}**
+📧 **Calendar invite sent to {data.get("email", "your email")}**
 ⏰ **Reminder set for 24 hours before your appointment**
-🗓️ **Scheduled for {data.get('date', 'N/A')} at {data.get('time', 'N/A')}**
+🗓️ **Scheduled for {data.get("date", "N/A")} at {data.get("time", "N/A")}**
 
-Thank you for booking with us!"""
-        })
+Thank you for booking with us!""",
+            }
+        )
 
     def _show_progress(self, booking_type: str):
         """Show booking progress"""
@@ -226,7 +238,7 @@ Thank you for booking with us!"""
             "🔍 Validating information...",
             "📝 Creating booking...",
             "📤 Sending confirmation...",
-            "✅ Finalizing..."
+            "✅ Finalizing...",
         ]
 
         progress_bar = st.progress(0)
@@ -253,8 +265,8 @@ class BookingAgent:
         self.form_data = {}
         self.form_step = 0
         self.booking_steps = {
-            'callback': ['name', 'phone', 'email'],
-            'appointment': ['name', 'phone', 'email', 'date', 'time', 'purpose']
+            "callback": ["name", "phone", "email"],
+            "appointment": ["name", "phone", "email", "date", "time", "purpose"],
         }
 
     def process_message(self, message: str) -> tuple:
@@ -279,10 +291,16 @@ class BookingAgent:
 
             print(f"📞 Starting {booking_type} booking...")
 
-            if booking_type == 'callback':
-                return ("I'll arrange a callback for you! 📞\n\n**What's your full name?**", False)
+            if booking_type == "callback":
+                return (
+                    "I'll arrange a callback for you! 📞\n\n**What's your full name?**",
+                    False,
+                )
             else:
-                return ("Let's book your appointment! 📅\n\n**What's your full name?**", False)
+                return (
+                    "Let's book your appointment! 📅\n\n**What's your full name?**",
+                    False,
+                )
 
         print("❌ No booking intent detected")
         return (None, False)
@@ -290,56 +308,76 @@ class BookingAgent:
     def _detect_booking_intent(self, message: str) -> bool:
         """Enhanced booking intent detection"""
         booking_keywords = [
-            'book', 'schedule', 'appointment', 'meeting', 'callback',
-            'call me', 'arrange', 'set up', 'reserve', 'appoint',
-            'call back', 'contact me', 'book me', 'book an', 'schedule a'
+            "book",
+            "schedule",
+            "appointment",
+            "meeting",
+            "callback",
+            "call me",
+            "arrange",
+            "set up",
+            "reserve",
+            "appoint",
+            "call back",
+            "contact me",
+            "book me",
+            "book an",
+            "schedule a",
         ]
         message_lower = message.lower().strip()
 
         # Check for exact matches and partial matches
-        detected = any(
-            keyword in message_lower for keyword in booking_keywords)
+        detected = any(keyword in message_lower for keyword in booking_keywords)
 
         # Additional checks for common booking phrases
         booking_phrases = [
-            'i want to book', 'i need to schedule', 'can you book',
-            'i would like to', 'please book', 'please schedule'
+            "i want to book",
+            "i need to schedule",
+            "can you book",
+            "i would like to",
+            "please book",
+            "please schedule",
         ]
 
         if not detected:
-            detected = any(
-                phrase in message_lower for phrase in booking_phrases)
+            detected = any(phrase in message_lower for phrase in booking_phrases)
 
         print(f"🔍 Booking intent detection for '{message}': {detected}")
         return detected
 
     def _determine_booking_type(self, message: str) -> str:
         """Determine if callback or appointment"""
-        callback_keywords = ['call me', 'callback',
-                             'call back', 'phone me', 'ring me']
+        callback_keywords = ["call me", "callback", "call back", "phone me", "ring me"]
         message_lower = message.lower()
 
         if any(keyword in message_lower for keyword in callback_keywords):
-            return 'callback'
-        return 'appointment'
+            return "callback"
+        return "appointment"
 
     def _handle_form_step(self, user_input: str) -> tuple:
         """Handle current form step with enhanced validation"""
         if self.form_step >= len(self.booking_steps[self.current_booking]):
             print("⚠️ Form step out of range, resetting...")
             self._reset_form()
-            return ("Something went wrong. Let's start over. How can I help you?", False)
+            return (
+                "Something went wrong. Let's start over. How can I help you?",
+                False,
+            )
 
         current_step = self.booking_steps[self.current_booking][self.form_step]
         print(f"📝 Handling step '{current_step}' with input: '{user_input}'")
 
         # Validate and parse the input
         parsed_value, error_message = self._validate_and_parse_input(
-            current_step, user_input.strip())
+            current_step, user_input.strip()
+        )
 
         if error_message:
             # Validation failed, ask again with error message
-            return (f"❌ {error_message}\n\n{self._get_step_question(current_step)}", False)
+            return (
+                f"❌ {error_message}\n\n{self._get_step_question(current_step)}",
+                False,
+            )
 
         # Store the valid input
         self.form_data[current_step] = parsed_value
@@ -347,7 +385,8 @@ class BookingAgent:
 
         print(f"📝 Updated form data: {self.form_data}")
         print(
-            f"📝 Next step: {self.form_step}/{len(self.booking_steps[self.current_booking])}")
+            f"📝 Next step: {self.form_step}/{len(self.booking_steps[self.current_booking])}"
+        )
 
         # Check if form is complete
         if self.form_step >= len(self.booking_steps[self.current_booking]):
@@ -362,24 +401,27 @@ class BookingAgent:
         if not value or len(value.strip()) == 0:
             return "", "Please provide a valid response."
 
-        if field == 'name':
+        if field == "name":
             return self.parser.validate_name(value)
 
-        elif field == 'phone':
+        elif field == "phone":
             return self.parser.validate_phone(value)
 
-        elif field == 'email':
+        elif field == "email":
             return self.parser.validate_email(value)
 
-        elif field == 'date':
+        elif field == "date":
             return self.parser.parse_date(value)
 
-        elif field == 'time':
+        elif field == "time":
             return self.parser.parse_time(value)
 
-        elif field == 'purpose':
+        elif field == "purpose":
             if len(value) < 5:
-                return "", "Please provide more details about the appointment purpose (at least 5 characters)."
+                return (
+                    "",
+                    "Please provide more details about the appointment purpose (at least 5 characters).",
+                )
             return value.strip(), ""
 
         return value.strip(), ""
@@ -387,12 +429,12 @@ class BookingAgent:
     def _get_step_question(self, step: str) -> str:
         """Get question text for a specific step"""
         questions = {
-            'name': "**What's your full name?**",
-            'phone': "**What's your phone number?** (e.g., 9812345678)",
-            'email': "**What's your email address?** (e.g., john@example.com)",
-            'date': "**When would you like the appointment?**\n(e.g., 'tomorrow', 'next Monday', '2024-12-25', 'today')",
-            'time': "**What time would you prefer?**\n(e.g., '3:40 PM', 'around 2 afternoon', '10:30 AM')",
-            'purpose': "**What's the purpose of the appointment?**\n(Please provide some details)"
+            "name": "**What's your full name?**",
+            "phone": "**What's your phone number?** (e.g., 9812345678)",
+            "email": "**What's your email address?** (e.g., john@example.com)",
+            "date": "**When would you like the appointment?**\n(e.g., 'tomorrow', 'next Monday', '2024-12-25', 'today')",
+            "time": "**What time would you prefer?**\n(e.g., '3:40 PM', 'around 2 afternoon', '10:30 AM')",
+            "purpose": "**What's the purpose of the appointment?**\n(Please provide some details)",
         }
         return questions.get(step, "Please continue...")
 
@@ -406,7 +448,7 @@ class BookingAgent:
 
         # Add confirmation for previous step
         prev_step = self.booking_steps[self.current_booking][self.form_step - 1]
-        prev_value = self.form_data.get(prev_step, '')
+        prev_value = self.form_data.get(prev_step, "")
 
         confirmation = f"✅ **{prev_step.title()}:** {prev_value}\n\n{question}"
 
@@ -416,20 +458,20 @@ class BookingAgent:
         """Complete the booking using LangChain tool"""
         try:
             print(
-                f"🎯 Completing {self.current_booking} booking with data: {self.form_data}")
+                f"🎯 Completing {self.current_booking} booking with data: {self.form_data}"
+            )
 
             # Show final summary before processing
             summary = self._generate_booking_summary()
 
             # Use the LangChain tool to process booking
             result = self.booking_tool._run(
-                booking_type=self.current_booking,
-                contact_data=self.form_data
+                booking_type=self.current_booking, contact_data=self.form_data
             )
 
             # Parse result
             booking_result = json.loads(result)
-            response = booking_result['message']
+            response = booking_result["message"]
 
             # Reset form
             self._reset_form()
@@ -443,22 +485,22 @@ class BookingAgent:
 
     def _generate_booking_summary(self) -> str:
         """Generate a summary of the booking before processing"""
-        if self.current_booking == 'callback':
+        if self.current_booking == "callback":
             return f"""
 📋 **Callback Summary:**
-• Name: {self.form_data.get('name', '')}
-• Phone: {self.form_data.get('phone', '')}
-• Email: {self.form_data.get('email', '')}
+• Name: {self.form_data.get("name", "")}
+• Phone: {self.form_data.get("phone", "")}
+• Email: {self.form_data.get("email", "")}
 """
         else:
             return f"""
 📋 **Appointment Summary:**
-• Name: {self.form_data.get('name', '')}
-• Phone: {self.form_data.get('phone', '')}
-• Email: {self.form_data.get('email', '')}
-• Date: {self.form_data.get('date', '')}
-• Time: {self.form_data.get('time', '')}
-• Purpose: {self.form_data.get('purpose', '')}
+• Name: {self.form_data.get("name", "")}
+• Phone: {self.form_data.get("phone", "")}
+• Email: {self.form_data.get("email", "")}
+• Date: {self.form_data.get("date", "")}
+• Time: {self.form_data.get("time", "")}
+• Purpose: {self.form_data.get("purpose", "")}
 """
 
     def _reset_form(self):
@@ -480,12 +522,16 @@ class BookingAgent:
         if self.current_booking:
             booking_type = self.current_booking
             self._reset_form()
-            return f"❌ {booking_type.title()} booking cancelled. How else can I help you?"
+            return (
+                f"❌ {booking_type.title()} booking cancelled. How else can I help you?"
+            )
         return "No active booking to cancel."
 
     def get_current_step(self) -> str:
         """Get current step for debugging"""
-        if not self.current_booking or self.form_step >= len(self.booking_steps[self.current_booking]):
+        if not self.current_booking or self.form_step >= len(
+            self.booking_steps[self.current_booking]
+        ):
             return "No active step"
         return self.booking_steps[self.current_booking][self.form_step]
 
